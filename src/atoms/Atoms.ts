@@ -1,7 +1,6 @@
 import { atom } from "jotai";
-const isLoginAtom = atom({
-  key: 'isLoginAtom',
-  default: false,
-});
+
+// boolean 타입 명시
+const isLoginAtom = atom<boolean>(false);
 
 export { isLoginAtom };

@@ -1,18 +1,12 @@
-import React from 'react';
+interface TailCardProps {
+  title: string,
+  imageUrl: string,
+  location: string,
+  traffic: string,
+}
 
-
-
-export default function TailCard({ title, imageUrl, location, searchKeyword, traffic, day }) {
-    // let tags = '';
-    // if (searchKeyword.includes(',')) {
-    //     tags= searchKeyword.split(',')
-    //     tags = tags.map(kw => <span key={kw} 
-    //     className="bg-green-100 rounded-sm p-2 inline-flex mx-0.5 text-sm">
-    //                           {kw}
-    //                       </span>)
-    // }
-    // else tags = searchKeyword;
-    
+export default function TailCard({ title, imageUrl, location,  traffic} : TailCardProps) {
+  
   return (
     <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
         <img className="rounded-t-lg w-full h-46 object-cover" src={imageUrl} alt={title} />

@@ -1,73 +1,84 @@
-import React, { useState, useEffect, useRef } from 'react';
-import TodoInput from './TodoInput';
-import TodoItem from './TodoItem';
-import TailButton from '../component/TailButton';
+import { useEffect, useState } from "react";
 import { supabase } from "../supabase/client";
+import TodoInput from "./TodoInput";
+import TodoItem from "./TodoItem";
+import type { Todo } from "./todo";
 
 export default function TodoList() {
-    const [todos, setTodos] = useState([]);
-    const [completed, setCompleted] = useState(0);
-    const [incompleted, setInCompleted] = useState(0);
+  const [todos, setTodos] = useState<Todo[]>([]);
 
-    const inRef = useRef();
+  const getTodos = async () => {
+    const { data, error } = await supabase
+      .from("todos")
+      .select("*")
+      .order("id", { ascending: false });
 
+    if (error) {
+      console.error(error);
+      return;
+    }
 
-    const getTodos = async () => {
-      const { data, error } = await supabase
-        .from("todos")
-        .select("*")
-        .order("id", { ascending: false });
-      if (error) {
-        console.error("Error fetching todos:", error);
-      } else {
-        setTodos(data);
-      }
-    };
+    setTodos(data as Todo[]);
+  };
 
-    useEffect(() => {
-        //문자열 -> 자바스크립트 객체 : JSON.parse()
-       getTodos();
-    }, []);
+  useEffect(() => {
+    getTodos();
+  }, []);
 
-    useEffect(() => {
-        setCompleted(todos.filter(todo => todo.completed).length);
-        setInCompleted(todos.filter(todo => !todo.completed).length);
-    }, [todos]);
+  const handleAdd = async (text: string) => {
+    const { error } = await supabase
+      .from("todos")
+      .insert([{ text, completed: false }]);
 
-    const handleAdd = async () => {
-      if (inRef.current.value == "") {
-        alert("값을 입력해 주세요.");
-        inRef.current.focus();
-        return;
-      }
-      const { data, error } = await supabase
-        .from("todos")
-        .insert([{ text: inRef.current.value, completed: false }]);
-      if (error) {
-        console.error("Error adding todo:", error);
-      } else {
-        getTodos();
-        inRef.current.value = "";
-        inRef.current.focus();
-      }
-    };
+    if (!error) {
+      getTodos();
+    }
+  };
 
-    return (
-      <div className="flex flex-col w-full justify-center items-center m-5">
-        <h1 className="text-2xl max-w-3xl font-bold text-center">
-          할일목록(Supabase Client 라이브러리사용)
-        </h1>
+  const handleToggle = async (id: number) => {
+    const todo = todos.find((t) => t.id === id);
+    if (!todo) return;
 
-        <TodoInput todos={todos} setTodos={setTodos} handleSave={handleAdd} />
+    const { error } = await supabase
+      .from("todos")
+      .update({ completed: !todo.completed })
+      .eq("id", id);
 
-        {todos.map((todo) => (
-          <TodoItem
-            key={todo.id}
-            todo={todo}
-            todos={todos}
-            setTodos={setTodos}
-          />
-        ))}
-      </div>
-    );
+    if (!error) getTodos();
+  };
+
+  const handleEdit = async (id: number, newText: string) => {
+    const { error } = await supabase
+      .from("todos")
+      .update({ text: newText })
+      .eq("id", id);
+
+    if (!error) getTodos();
+  };
+
+  const handleDelete = async (id: number) => {
+    const { error } = await supabase.from("todos").delete().eq("id", id);
+
+    if (!error) getTodos();
+  };
+
+  return (
+    <div className="flex flex-col w-full justify-center items-center m-5">
+      <h1 className="text-2xl max-w-3xl font-bold text-center">
+        할일 목록 (TypeScript + Supabase)
+      </h1>
+
+      <TodoInput handleSave={handleAdd} />
+
+      {todos.map((todo) => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onToggle={handleToggle}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      ))}
+    </div>
+  );
 }

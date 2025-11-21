@@ -1,12 +1,15 @@
-export default function TailBall({n}) {
-
   const BALLCOLOR = [
     'bg-blue-300',
     'bg-red-300',
     'bg-orange-300',
     'bg-green-300',
     'bg-gray-300'
-  ]
+  ] as const;
+
+  interface TailBallProps {
+    n: number
+  }
+  export default function TailBall({n} : TailBallProps) {
 
   return (
     <div  className={`w-20 h-20 rounded-full

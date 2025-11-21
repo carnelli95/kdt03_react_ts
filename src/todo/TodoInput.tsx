@@ -1,37 +1,25 @@
-import React, { useRef } from "react";
-import TailButton from "../component/TailButton";
-import { supabase } from "../supabase/client";
+import { useRef } from "react";
 
-export default function TodoInput({ todo, todos, setTodos, handleSave }) {
-  const inRef = useRef();
+interface TodoInputProps {
+  handleSave: (text: string) => void;
+}
 
-  const handleAdd = async () => {
-    if (inRef.current.value == "") {
+export default function TodoInput({ handleSave }: TodoInputProps) {
+  const inRef = useRef<HTMLInputElement>(null);
+
+  const onAdd = () => {
+    const value = inRef.current?.value ?? "";
+
+    if (value.trim() === "") {
       alert("값을 입력해 주세요.");
-      inRef.current.focus();
+      inRef.current?.focus();
       return;
     }
-    const { data, error } = await supabase
-      .from("todos")
-      .insert([{ text: inRef.current.value, completed: false }]);
-    if (error) {
-      console.error("Error adding todo:", error);
-    } else {
-      getTodos();
+
+    handleSave(value);
+    if (inRef.current) {
       inRef.current.value = "";
       inRef.current.focus();
-    }
-  };
-
-  const getTodos = async () => {
-    const { data, error } = await supabase
-      .from("todos")
-      .select("*")
-      .order("id", { ascending: false });
-    if (error) {
-      console.error("Error fetching todos:", error);
-    } else {
-      setTodos(data);
     }
   };
 
@@ -40,11 +28,15 @@ export default function TodoInput({ todo, todos, setTodos, handleSave }) {
       <input
         type="text"
         ref={inRef}
-        className="flex-1 p-2 border border-gray-200
-                           focus:outline-none focus:ring-2 focus:ring-blue-600"
+        className="flex-1 p-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
         placeholder="새로운 할 일을 입력하세요"
       />
-      <TailButton caption="추가" color="blue" onHandle={handleAdd} />
+      <button
+        className="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
+        onClick={onAdd}
+      >
+        추가
+      </button>
     </div>
   );
 }
